@@ -1,5 +1,6 @@
 package idol.back.category.application.service;
 
+import idol.back.board.application.domain.Board;
 import idol.back.board.application.domain.BoardType;
 import idol.back.global.exceptions.BusinessException;
 import idol.back.board.repository.BoardRepository;
@@ -44,34 +45,46 @@ class CategoryServiceImplTest {
 
     @Test
     void 하위_카테고리_생성_성공() {
-        // given
-        String categoryName = "남자";
-        Integer parentId = categoryService.create(categoryName, 0);
-        String childCategoryName = "엑소";
-        // when
-        Integer childId = categoryService.create(childCategoryName, parentId);
+        // given & when
+        Integer root = categoryService.create("남자", 0);
+        Integer exo = categoryService.create("엑소", root);
+        Integer father = categoryService.create("첸", exo);
+        Integer bh = categoryService.create("백현", exo);
         // then
-        Optional<Category> parentCategory = categoryRepository.findById(parentId);
-        Optional<Category> childCategory = categoryRepository.findById(childId);
-        assertThat(parentCategory.isPresent()).isTrue();
-        assertThat(childCategory.isPresent()).isTrue();
-
+        Optional<Category> exoCategory = categoryRepository.findById(exo);
+        Optional<Category> father_category = categoryRepository.findById(father);
+        Optional<Category> bh_category = categoryRepository.findById(bh);
+        /* 값이 존재하는지 */
+        assertThat(exoCategory.isPresent()).isTrue();
+        assertThat(father_category.isPresent()).isTrue();
+        assertThat(bh_category.isPresent()).isTrue();
+        /* 부모 카테고리에 자식 카테고리가 제대로 저장 되었는지 */
+        assertThat(father_category.get()).isIn(exoCategory.get().getChildren());
+        assertThat(bh_category.get()).isIn(exoCategory.get().getChildren());
+        /* 익명게시판이 아니면 서로 다른 게시판 번호가 부여되었는지 */
+        assertThat(father_category.get().getBoardId()).isNotEqualTo(bh_category.get().getBoardId());
+        /* 자식들의 부모 카테고리 번호가 같은지 */
+        assertThat(father_category.get().getParentId()).isEqualTo(bh_category.get().getParentId());
     }
 
     @Test
-    void 익명_카테고리_생성() {
+    void 익명_게시판_생성_성공() {
         // given
-        String categoryName = "남자";
-        Integer parentId = categoryService.create(categoryName, 0);
-        String childCategoryName = "익명게시판";
+        Integer root1 = categoryService.create("남자", 0);
+        Integer p2 = categoryService.create("엑소", root1);
+        Integer root2 = categoryService.create("여자", 0);
+        Integer p4 = categoryService.create("뉴진스", root2);
         // when
-        Integer childId = categoryService.create(childCategoryName, parentId);
+        Integer c1 = categoryService.create("익명게시판", p2);
+        Integer c2 = categoryService.create("익명게시판", p4);
         // then
-        Optional<Category> parentCategory = categoryRepository.findById(parentId);
-        Optional<Category> childCategory = categoryRepository.findById(childId);
-        assertThat(parentCategory.isPresent()).isTrue();
-        assertThat(childCategory.isPresent()).isTrue();
-        assertThat(childCategory.get().getBoardId()).isEqualTo(boardRepository.findBoardIdByType(BoardType.ANONYMOUS));
+        Optional<Category> category1 = categoryRepository.findById(c1);
+        Optional<Category> category2 = categoryRepository.findById(c2);
+        assertThat(category1.isPresent()).isTrue();
+        assertThat(category2.isPresent()).isTrue();
+        /* 익명게시판이면, 부모 상관없이 같은 게시글 번호를 부여받았는지 */
+        assertThat(category1.get().getBoardId()).isEqualTo(category2.get().getBoardId());
+        assertThat(category1.get().getParentId()).isNotEqualTo(category2.get().getParentId());
     }
 
     @Test
@@ -107,10 +120,11 @@ class CategoryServiceImplTest {
     void 카테고리_검색_by_Name() {
         //given
         String categoryName = "남자";
-        Integer categoryId = categoryService.create(categoryName, 0);
+        categoryService.create(categoryName, 0);
         // when
         Optional<Category> result = categoryRepository.findByName(categoryName);
         // then
         assertThat(result.isPresent()).isTrue();
+        assertThat(result.get().getName()).isEqualTo(categoryName);
     }
 }

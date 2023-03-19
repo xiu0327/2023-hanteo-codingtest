@@ -13,7 +13,6 @@ public class BusinessException extends RuntimeException{
 
     public BusinessException(BasicExceptionType exceptionType) {
         super(exceptionType.getMessage());
-        log.info("error message = {}", exceptionType.getMessage());
         this.exceptionType = exceptionType;
     }
 }

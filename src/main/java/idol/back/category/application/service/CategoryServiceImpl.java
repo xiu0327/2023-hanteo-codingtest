@@ -1,8 +1,8 @@
 package idol.back.category.application.service;
 
 import idol.back.board.application.domain.Board;
+import idol.back.board.application.service.BoardService;
 import idol.back.global.exceptions.BusinessException;
-import idol.back.board.repository.BoardRepository;
 import idol.back.category.application.domain.Category;
 import idol.back.category.exceptions.CategoryExceptionType;
 import idol.back.category.repository.CategoryRepository;
@@ -15,17 +15,14 @@ public class CategoryServiceImpl implements CategoryService{
 
 
     private final CategoryRepository categoryRepository;
-    private final BoardRepository boardRepository;
+    private final BoardService boardService;
 
     @Override
     public Integer create(String categoryName, Integer parentId) {
         existParentId(parentId);
-        Category category = new Category(categoryName, parentId);
-        Integer categoryId = categoryRepository.save(category);
-        Board board = new Board(categoryId, categoryName);
-        Integer boardId = boardRepository.save(board);
-        category.setBoardId(boardId);
-        return category.getId();
+        Integer boardId = boardService.save(new Board(categoryName));
+        Category category = new Category(categoryName, parentId, boardId);
+        return categoryRepository.save(category);
     }
 
     private void existParentId(Integer parentId){

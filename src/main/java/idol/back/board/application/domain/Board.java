@@ -2,11 +2,9 @@ package idol.back.board.application.domain;
 
 public class Board {
     private Integer id;
-    private Integer categoryId;
     private BoardType type;
 
-    public Board(Integer categoryId, String categoryName) {
-        this.categoryId = categoryId;
+    public Board(String categoryName) {
         this.type = lookUpType(categoryName);
     }
 

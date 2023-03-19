@@ -14,9 +14,10 @@ public class Category {
     private List<Category> children;
     private Integer boardId;
 
-    public Category(String name, Integer parentId) {
+    public Category(String name, Integer parentId, Integer boardId) {
         this.name = name;
         this.parentId = parentId;
+        this.boardId = boardId;
         this.children = new ArrayList<>();
     }
 
@@ -28,10 +29,6 @@ public class Category {
 
     public void setId(Integer id){
         this.id = id;
-    }
-
-    public void setBoardId(Integer boardId){
-        this.boardId = boardId;
     }
 
     public CategoryDto toDto(){
